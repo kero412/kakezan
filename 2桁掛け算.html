@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>2桁掛け算マスター</title>
     <style>
         :root {
@@ -21,69 +21,68 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* 画面全体の高さを100%に固定 */
-            height: -webkit-fill-available; /* モバイルSafariのツールバー対策 */
+            /* 動的ビューポート(dvh)を優先し、未対応環境向けに100vh/100%をフォールバック */
+            height: 100vh;
+            height: 100dvh; 
             overflow: hidden; /* スクロールを完全に禁止 */
             box-sizing: border-box;
-        }
-
-        html {
-            height: -webkit-fill-available;
         }
 
         .app-container {
             background-color: #ffffff;
             width: 100%;
             max-width: 420px;
-            height: 100%;
-            max-height: 100vh; /* スマホ画面内に絶対に収める */
+            height: 100vh;
+            height: 100dvh; /* ブラウザのメニューバーに合わせた高さに固定 */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 12px 20px;
+            /* 上下のバーと被らないよう、セーフエリアおよび十分なパディング（上下16px）を確保 */
+            padding: calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom)) 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* 要素を上下に綺麗に分散配置 */
+            justify-content: space-between;
         }
 
         h1 {
-            font-size: 18px;
+            font-size: 16px;
             color: var(--primary-color);
             text-align: center;
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             border-bottom: 2px solid #edf2f7;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             flex-shrink: 0;
         }
 
-        /* メニュー画面（スクロールフリー対応） */
+        /* メニュー画面 */
         .menu-screen {
             display: block;
             height: 100%;
-            overflow-y: auto; /* メニューが多い場合のみメニュー内スクロールを許可 */
+            overflow-y: auto;
+            padding-top: 4px;
         }
 
         .menu-section {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .menu-section h2 {
-            font-size: 14px;
+            font-size: 13px;
             color: #4a5568;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
         }
 
         .grid-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .menu-btn {
             background-color: #fff;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 8px;
+            font-size: 13px;
             font-weight: bold;
             color: var(--primary-color);
             cursor: pointer;
@@ -100,11 +99,11 @@
             background-color: var(--accent-color);
             color: white;
             border: none;
-            font-size: 15px;
-            padding: 12px;
+            font-size: 14px;
+            padding: 10px;
         }
 
-        /* ゲーム画面（Flexboxで縦幅を自動調整） */
+        /* ゲーム画面 */
         .game-screen {
             display: none;
             flex-direction: column;
@@ -112,62 +111,69 @@
             justify-content: space-between;
         }
 
+        /* ヘッダーエリア：ブラウザのバーから少し下ろして押しやすく調整 */
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: #718096;
-            font-size: 13px;
-            height: 24px;
+            font-size: 14px;
+            height: 32px;
+            margin-bottom: 4px;
             flex-shrink: 0;
         }
 
         .back-btn {
-            background: none;
+            background-color: #edf2f7; /* タップ領域を視認しやすくするため薄い背景を追加 */
             border: none;
             color: var(--accent-color);
             font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            padding: 0;
             font-weight: bold;
         }
 
-        /* 筆算表示エリア（高さを抑える） */
+        .back-btn:active {
+            background-color: #e2e8f0;
+        }
+
+        /* 筆算表示エリア */
         .display-area {
             background-color: #edf2f7;
             border-radius: 10px;
-            padding: 10px 15px;
+            padding: 8px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex-grow: 1; /* 空いた縦スペースを柔軟に埋める */
-            margin: 8px 0;
-            min-height: 150px;
+            flex-grow: 1;
+            margin: 6px 0;
+            min-height: 130px;
         }
 
         .hissann-container {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 28px; /* スマホ向けにフォントサイズを縮小 */
+            font-size: 26px;
             font-weight: bold;
             color: var(--primary-color);
             line-height: 1.1;
             display: inline-block;
             text-align: right;
-            min-width: 160px;
+            min-width: 150px;
             box-sizing: border-box;
         }
 
         .hissann-row {
             letter-spacing: 4px;
             position: relative;
-            height: 32px;
+            height: 28px;
         }
 
         .hissann-operator {
             position: absolute;
             left: 0;
-            font-size: 24px;
+            font-size: 22px;
             color: #718096;
         }
 
@@ -185,10 +191,10 @@
         }
 
         .hissann-input-view {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             color: #2d3748;
-            min-height: 32px;
+            min-height: 28px;
             letter-spacing: 4px;
             text-align: right;
             width: 100%;
@@ -203,39 +209,39 @@
 
         .hissann-input-view.empty {
             color: #a0aec0;
-            font-size: 16px;
+            font-size: 15px;
             letter-spacing: 0;
-            line-height: 32px;
+            line-height: 28px;
         }
 
         .result-message {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
-            margin-top: 4px;
-            min-height: 20px;
+            margin-top: 2px;
+            min-height: 18px;
             text-align: center;
         }
 
         .result-message.correct { color: var(--success-color); }
         .result-message.incorrect { color: var(--error-color); }
 
-        /* テンキー（縦幅を圧迫しないようコンパクトに） */
+        /* テンキー */
         .keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .key {
             background-color: #f7fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: var(--primary-color);
-            padding: 10px 0; /* 縦のパディングを削減 */
+            padding: 8px 0;
             cursor: pointer;
             user-select: none;
             outline: none;
@@ -248,7 +254,7 @@
 
         .key.action-key {
             background-color: #e2e8f0;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         /* アクションボタン */
@@ -258,11 +264,12 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 12px;
-            font-size: 15px;
+            padding: 10px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             flex-shrink: 0;
+            margin-bottom: 4px; /* 最下部バーとのマージン */
         }
 
         .submit-btn.next-state {
@@ -280,13 +287,13 @@
         }
 
         .result-title {
-            font-size: 22px;
+            font-size: 20px;
             color: var(--primary-color);
             margin-bottom: 10px;
         }
 
         .score-display {
-            font-size: 42px;
+            font-size: 36px;
             font-weight: bold;
             color: var(--accent-color);
             margin-bottom: 20px;
@@ -315,7 +322,7 @@
             </div>
         </div>
 
-        <div class="menu-section" style="margin-top: 15px;">
+        <div class="menu-section" style="margin-top: 10px;">
             <h2>【実践用】 ランダムテスト（全範囲から10問）</h2>
             <div class="grid-buttons">
                 <button class="menu-btn challenge-btn" onclick="startChallenge()">実践テストに挑戦 (10問)</button>
@@ -594,7 +601,7 @@
 
     function showScreen(screenType) {
         menuScreen.style.display = screenType === 'menu' ? 'block' : 'none';
-        gameScreen.style.display = screenType === 'game' ? 'flex' : 'none'; /* flexに変更して縦整列を最適化 */
+        gameScreen.style.display = screenType === 'game' ? 'flex' : 'none'; 
         resultScreen.style.display = screenType === 'result' ? 'flex' : 'none';
         
         if (screenType === 'menu') {
