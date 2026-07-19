@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2桁掛け算マスター</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .app-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: var(--primary-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 15px;
+        }
+
+        /* メメニュー画面 */
+        .menu-screen {
+            display: block;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-section h2 {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .menu-btn {
+            background-color: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            border-color: var(--accent-color);
+            background-color: #f7fafc;
+        }
+
+        .menu-btn.challenge-btn {
+            grid-column: span 2;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            font-size: 16px;
+            padding: 15px;
+        }
+
+        .menu-btn.challenge-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* ゲーム画面 */
+        .game-screen {
+            display: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            font-weight: bold;
+        }
+
+        /* 筆算表示エリアのコンテナ */
+        .display-area {
+            background-color: #edf2f7;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* 筆算用のスタイル構造 */
+        .hissann-container {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary-color);
+            line-height: 1.1;
+            display: inline-block;
+            text-align: right;
+            padding: 5px 10px;
+            min-width: 200px;
+            box-sizing: border-box;
+        }
+
+        .hissann-row {
+            letter-spacing: 6px;
+            position: relative;
+            height: 40px;
+        }
+
+        .hissann-operator {
+            position: absolute;
+            left: 0;
+            font-size: 32px;
+            color: #718096;
+        }
+
+        .hissann-line {
+            border-bottom: 3px solid var(--primary-color);
+            margin-top: 2px;
+            margin-bottom: 4px;
+            width: 100%;
+        }
+
+        .hissann-line.double {
+            border-bottom: 6px double var(--primary-color);
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
+
+        /* 2段入力用の各解答エリア */
+        .hissann-input-view {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2d3748;
+            min-height: 40px;
+            letter-spacing: 6px;
+            text-align: right;
+            width: 100%;
+            border-radius: 4px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .hissann-input-view.active {
+            background-color: #fff;
+            box-shadow: inset 0 0 0 2px var(--accent-color);
+        }
+
+        .hissann-input-view.empty {
+            color: #a0aec0;
+            font-size: 20px;
+            letter-spacing: 0;
+            line-height: 40px;
+        }
+
+        /* 正誤判定メッセージ */
+        .result-message {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 8px;
+            min-height: 24px;
+            text-align: center;
+        }
+
+        .result-message.correct { color: var(--success-color); }
+        .result-message.incorrect { color: var(--error-color); }
+
+        /* テンキーレイアウト */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .key {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary-color);
+            padding: 12px 0;
+            cursor: pointer;
+            user-select: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .key:active {
+            background-color: #e2e8f0;
+        }
+
+        .key.action-key {
+            background-color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .key.action-key:active {
+            background-color: #cbd5e0;
+        }
+
+        /* 決定・次へボタン */
+        .submit-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #1a252f;
+        }
+
+        .submit-btn.next-state {
+            background-color: var(--success-color);
+        }
+
+        .submit-btn.next-state:hover {
+            background-color: #27ae60;
+        }
+
+        /* リザルト画面 */
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-title {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- タイトル -->
+    <h1 id="app-title">2桁掛け算マスター</h1>
+
+    <!-- メニュー画面 -->
+    <div id="menu-screen" class="menu-screen">
+        <div class="menu-section">
+            <h2>【練習用】 範囲内からランダム出題 (10問)</h2>
+            <div class="grid-buttons">
+                <button class="menu-btn practice-btn" onclick="startPractice(10)">10代 (10〜19)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(20)">20代 (20〜29)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(30)">30代 (30〜39)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(40)">40代 (40〜49)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(50)">50代 (50〜59)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(60)">60代 (60〜69)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(70)">70代 (70〜79)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(80)">80代 (80〜89)</button>
+                <button class="menu-btn practice-btn" onclick="startPractice(90)">90代 (90〜99)</button>
+            </div>
+        </div>
+
+        <div class="menu-section" style="margin-top: 30px;">
+            <h2>【実践用】 ランダムテスト（全範囲から10問）</h2>
+            <div class="grid-buttons">
+                <button class="menu-btn challenge-btn" onclick="startChallenge()">実践テストに挑戦 (10問)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="game-screen" class="game-screen">
+        <div class="game-header">
+            <button class="back-btn" onclick="backToMenu()">◀ メニューへ戻る</button>
+            <div id="progress-text">問題: 1 / 10</div>
+        </div>
+
+        <div class="display-area">
+            <!-- 多段筆算ブロック -->
+            <div class="hissann-container">
+                <div class="hissann-row" id="hissann-num1">10</div>
+                <div class="hissann-row">
+                    <span class="hissann-operator">×</span>
+                    <span id="hissann-num2">10</span>
+                </div>
+                <div class="hissann-line"></div>
+                <!-- 途中計算1段目 (一の位の積) -->
+                <div class="hissann-input-view empty active" id="view-step1" onclick="switchField('step1')">段目1</div>
+                <!-- 途中計算2段目 (十の位の積) -->
+                <div class="hissann-input-view empty" id="view-step2" onclick="switchField('step2')">段目2</div>
+                <div class="hissann-line double"></div>
+                <!-- 最終合計 -->
+                <div class="hissann-input-view empty" id="view-total" onclick="switchField('total')">合計</div>
+            </div>
+            <div class="result-message" id="result-message"></div>
+        </div>
+
+        <!-- テンキー -->
+        <div class="keypad">
+            <button class="key" onclick="pressNum(1)">1</button>
+            <button class="key" onclick="pressNum(2)">2</button>
+            <button class="key" onclick="pressNum(3)">3</button>
+            <button class="key" onclick="pressNum(4)">4</button>
+            <button class="key" onclick="pressNum(5)">5</button>
+            <button class="key" onclick="pressNum(6)">6</button>
+            <button class="key" onclick="pressNum(7)">7</button>
+            <button class="key" onclick="pressNum(8)">8</button>
+            <button class="key" onclick="pressNum(9)">9</button>
+            <button class="key action-key" onclick="pressClear()">C</button>
+            <button class="key" onclick="pressNum(0)">0</button>
+            <button class="key action-key" onclick="pressBackspace()">⌫</button>
+        </div>
+
+        <button class="submit-btn" id="action-btn" onclick="handleAction()">次へ</button>
+    </div>
+
+    <!-- リザルト画面 -->
+    <div id="result-screen" class="result-screen">
+        <div class="result-title" id="result-title">テスト結果</div>
+        <div class="score-display" id="final-score">0 / 10</div>
+        <button class="submit-btn" onclick="backToMenu()">メニューに戻る</button>
+    </div>
+</div>
+
+<script>
+    // 状態管理
+    let mode = ''; 
+    let currentQuestionsList = [];
+    let currentIndex = 0;
+    
+    // 多段入力のためのオブジェクト管理
+    let answers = {
+        step1: '',
+        step2: '',
+        total: ''
+    };
+    let currentField = 'step1'; // 'step1', 'step2', 'total'
+
+    let isChecked = false;
+    let correctCount = 0;
+    let autoNextTimeout = null; 
+
+    // 画面要素
+    const menuScreen = document.getElementById('menu-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const appTitle = document.getElementById('app-title');
+    const hissannNum1 = document.getElementById('hissann-num1');
+    const hissannNum2 = document.getElementById('hissann-num2');
+    
+    const viewStep1 = document.getElementById('view-step1');
+    const viewStep2 = document.getElementById('view-step2');
+    const viewTotal = document.getElementById('view-total');
+    
+    const resultMessage = document.getElementById('result-message');
+    const progressText = document.getElementById('progress-text');
+    const actionBtn = document.getElementById('action-btn');
+    const resultTitle = document.getElementById('result-title');
+
+    // 練習モードの開始
+    function startPractice(baseNum) {
+        mode = 'practice';
+        currentIndex = 0;
+        correctCount = 0;
+        isChecked = false;
+        resetAnswers();
+        if (autoNextTimeout) clearTimeout(autoNextTimeout);
+        
+        currentQuestionsList = [];
+        for (let i = 0; i < 10; i++) {
+            const n1 = Math.floor(Math.random() * 10) + baseNum;
+            const n2 = Math.floor(Math.random() * 10) + baseNum;
+            currentQuestionsList.push({ num1: n1, num2: n2, answer: n1 * n2 });
+        }
+
+        appTitle.innerText = `練習: ${baseNum}代`;
+        showScreen('game');
+        showQuestion();
+    }
+
+    // 実践モードの開始
+    function startChallenge() {
+        mode = 'challenge';
+        currentIndex = 0;
+        correctCount = 0;
+        isChecked = false;
+        resetAnswers();
+        if (autoNextTimeout) clearTimeout(autoNextTimeout);
+        currentQuestionsList = [];
+
+        for (let i = 0; i < 10; i++) {
+            const n1 = Math.floor(Math.random() * 90) + 10;
+            const n2 = Math.floor(Math.random() * 90) + 10;
+            currentQuestionsList.push({ num1: n1, num2: n2, answer: n1 * n2 });
+        }
+
+        appTitle.innerText = "実践テスト";
+        showScreen('game');
+        showQuestion();
+    }
+
+    function resetAnswers() {
+        answers = { step1: '', step2: '', total: '' };
+        currentField = 'step1';
+    }
+
+    // 問題の表示
+    function showQuestion() {
+        const q = currentQuestionsList[currentIndex];
+        hissannNum1.innerText = q.num1;
+        hissannNum2.innerText = q.num2;
+        progressText.innerText = `問題: ${currentIndex + 1} / 10`;
+
+        resetAnswers();
+        updateAllDisplays();
+        resultMessage.innerText = '';
+        resultMessage.className = 'result-message';
+        actionBtn.innerText = '次へ進む';
+        actionBtn.className = 'submit-btn';
+        isChecked = false;
+    }
+
+    // 入力先フィールドの切り替え
+    function switchField(field) {
+        if (isChecked) return;
+        currentField = field;
+        updateFocusStyle();
+    }
+
+    function updateFocusStyle() {
+        viewStep1.classList.remove('active');
+        viewStep2.classList.remove('active');
+        viewTotal.classList.remove('active');
+
+        if (currentField === 'step1') viewStep1.classList.add('active');
+        if (currentField === 'step2') viewStep2.classList.add('active');
+        if (currentField === 'total') viewTotal.classList.add('active');
+    }
+
+    // テンキー入力とリアルタイム正誤判定
+    function pressNum(num) {
+        if (isChecked) return; 
+        if (answers[currentField].length >= 5) return; 
+        
+        answers[currentField] += num;
+        updateFieldDisplay(currentField);
+
+        // 最終合計の入力フィールドにいる場合のみ、リアルタイム最終正誤判定を行う
+        if (currentField === 'total') {
+            const q = currentQuestionsList[currentIndex];
+            if (parseInt(answers.total, 10) === q.answer) {
+                handleAction(); // 正解したその瞬間に判定＆遷移を発動
+            }
+        }
+    }
+
+    function pressClear() {
+        if (isChecked) return;
+        answers[currentField] = '';
+        updateFieldDisplay(currentField);
+    }
+
+    function pressBackspace() {
+        if (isChecked) return;
+        answers[currentField] = answers[currentField].slice(0, -1);
+        updateFieldDisplay(currentField);
+    }
+
+    function updateFieldDisplay(field) {
+        const view = field === 'step1' ? viewStep1 : (field === 'step2' ? viewStep2 : viewTotal);
+        const defaultText = field === 'step1' ? '段目1' : (field === 'step2' ? '段目2' : '合計');
+        
+        if (answers[field] === '') {
+            view.innerText = defaultText;
+            view.classList.add('empty');
+        } else {
+            view.innerText = answers[field];
+            view.classList.remove('empty');
+        }
+    }
+
+    function updateAllDisplays() {
+        updateFieldDisplay('step1');
+        updateFieldDisplay('step2');
+        updateFieldDisplay('total');
+        updateFocusStyle();
+    }
+
+    // アクションボタン（手動での進め方 / 確定処理）
+    function handleAction() {
+        if (isChecked) {
+            if (autoNextTimeout) clearTimeout(autoNextTimeout);
+            goToNext();
+            return;
+        }
+
+        // 入力が空の場合は進ませない
+        if (answers[currentField] === '') return;
+
+        // 合計入力欄以外にいるときは、Enter/クリックで次の段へ自動フォーカスを移動
+        if (currentField === 'step1') {
+            switchField('step2');
+            return;
+        } else if (currentField === 'step2') {
+            switchField('total');
+            return;
+        }
+
+        // 最終合計（total）の確定判定
+        const q = currentQuestionsList[currentIndex];
+        const userAns = parseInt(answers.total, 10);
+        let isCorrect = (userAns === q.answer);
+
+        if (isCorrect) {
+            resultMessage.innerText = '⭕ 正解！';
+            resultMessage.className = 'result-message correct';
+            correctCount++;
+        } else {
+            resultMessage.innerText = `❌ 不正解... (正解は ${q.answer})`;
+            resultMessage.className = 'result-message incorrect';
+        }
+
+        if (currentIndex === 9) {
+            actionBtn.innerText = '結果を見る';
+        } else {
+            actionBtn.innerText = '次の問題へ';
+        }
+        actionBtn.classList.add('next-state');
+        isChecked = true;
+        
+        viewStep1.classList.remove('active');
+        viewStep2.classList.remove('active');
+        viewTotal.classList.remove('active');
+
+        // ★正解の場合のみ、指定通り【0.5秒後】に自動遷移するようインターバルを変更
+        if (isCorrect) {
+            autoNextTimeout = setTimeout(() => {
+                goToNext();
+            }, 500); // 500ms = 0.5s
+        }
+    }
+
+    function goToNext() {
+        currentIndex++;
+        if (currentIndex < 10) {
+            showQuestion();
+        } else {
+            showFinalResult();
+        }
+    }
+
+    function showFinalResult() {
+        showScreen('result');
+        if (mode === 'practice') {
+            resultTitle.innerText = "練習結果";
+        } else {
+            resultTitle.innerText = "実践テスト結果";
+        }
+        document.getElementById('final-score').innerText = `${correctCount} / 10 問正解`;
+    }
+
+    function showScreen(screenType) {
+        menuScreen.style.display = screenType === 'menu' ? 'block' : 'none';
+        gameScreen.style.display = screenType === 'game' ? 'block' : 'none';
+        resultScreen.style.display = screenType === 'result' ? 'block' : 'none';
+        
+        if (screenType === 'menu') {
+            appTitle.innerText = "2桁掛け算マスター";
+            if (autoNextTimeout) clearTimeout(autoNextTimeout);
+        }
+    }
+
+    function backToMenu() {
+        showScreen('menu');
+    }
+
+    // キーボード入力サポート
+    document.addEventListener('keydown', (e) => {
+        if (gameScreen.style.display === 'block') {
+            if (e.key >= '0' && e.key <= '9') {
+                pressNum(parseInt(e.key, 10));
+            } else if (e.key === 'Backspace') {
+                pressBackspace();
+            } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+                pressClear();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAction();
+            } else if (e.key === 'Tab') {
+                // Tabキーによる手動フィールド移動
+                e.preventDefault();
+                if (isChecked) return;
+                if (currentField === 'step1') switchField('step2');
+                else if (currentField === 'step2') switchField('total');
+                else switchField('step1');
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
