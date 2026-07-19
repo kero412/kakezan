@@ -21,10 +21,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 動的ビューポート(dvh)を優先し、未対応環境向けに100vh/100%をフォールバック */
             height: 100vh;
             height: 100dvh; 
-            overflow: hidden; /* スクロールを完全に禁止 */
+            overflow: hidden; 
             box-sizing: border-box;
         }
 
@@ -33,9 +32,8 @@
             width: 100%;
             max-width: 420px;
             height: 100vh;
-            height: 100dvh; /* ブラウザのメニューバーに合わせた高さに固定 */
+            height: 100dvh; 
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            /* 上下のバーと被らないよう、セーフエリアおよび十分なパディング（上下16px）を確保 */
             padding: calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom)) 20px;
             box-sizing: border-box;
             display: flex;
@@ -87,11 +85,25 @@
             color: var(--primary-color);
             cursor: pointer;
             transition: all 0.2s;
+            touch-action: manipulation; 
         }
 
         .menu-btn:hover {
             border-color: var(--accent-color);
             background-color: #f7fafc;
+        }
+
+        .menu-btn.special-btn {
+            grid-column: span 2;
+            background-color: #e6fffa;
+            border-color: #319795;
+            color: #234e52;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        .menu-btn.special-btn:hover {
+            background-color: #b2f5ea;
         }
 
         .menu-btn.challenge-btn {
@@ -111,7 +123,6 @@
             justify-content: space-between;
         }
 
-        /* ヘッダーエリア：ブラウザのバーから少し下ろして押しやすく調整 */
         .game-header {
             display: flex;
             justify-content: space-between;
@@ -124,7 +135,7 @@
         }
 
         .back-btn {
-            background-color: #edf2f7; /* タップ領域を視認しやすくするため薄い背景を追加 */
+            background-color: #edf2f7; 
             border: none;
             color: var(--accent-color);
             font-size: 13px;
@@ -132,6 +143,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            touch-action: manipulation; 
         }
 
         .back-btn:active {
@@ -243,9 +255,11 @@
             color: var(--primary-color);
             padding: 8px 0;
             cursor: pointer;
-            user-select: none;
             outline: none;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation; 
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .key:active {
@@ -269,7 +283,10 @@
             font-weight: bold;
             cursor: pointer;
             flex-shrink: 0;
-            margin-bottom: 4px; /* 最下部バーとのマージン */
+            margin-bottom: 4px;
+            touch-action: manipulation; 
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .submit-btn.next-state {
@@ -308,6 +325,13 @@
     <!-- メニュー画面 -->
     <div id="menu-screen" class="menu-screen">
         <div class="menu-section">
+            <h2>【特訓】 2乗の計算 (10問)</h2>
+            <div class="grid-buttons">
+                <button class="menu-btn special-btn" onclick="startSquarePractice()">同じ数の2乗に挑戦 (11×11〜99×99)</button>
+            </div>
+        </div>
+
+        <div class="menu-section" style="margin-top: 10px;">
             <h2>【練習用】 範囲内からランダム出題 (10問)</h2>
             <div class="grid-buttons">
                 <button class="menu-btn" onclick="startPractice(10)">10代 (10〜19)</button>
@@ -424,6 +448,26 @@
         }
 
         appTitle.innerText = `練習: ${baseNum}代`;
+        showScreen('game');
+        showQuestion();
+    }
+
+    function startSquarePractice() {
+        mode = 'square';
+        currentIndex = 0;
+        correctCount = 0;
+        isChecked = false;
+        resetAnswers();
+        if (autoNextTimeout) clearTimeout(autoNextTimeout);
+
+        currentQuestionsList = [];
+        for (let i = 0; i < 10; i++) {
+            // 11〜99の範囲でランダムな数値を生成し、同じ数を掛ける
+            const n = Math.floor(Math.random() * 89) + 11;
+            currentQuestionsList.push({ num1: n, num2: n, answer: n * n });
+        }
+
+        appTitle.innerText = "練習: 同じ数の2乗";
         showScreen('game');
         showQuestion();
     }
@@ -593,6 +637,8 @@
         showScreen('result');
         if (mode === 'practice') {
             resultTitle.innerText = "練習結果";
+        } else if (mode === 'square') {
+            resultTitle.innerText = "2乗特訓結果";
         } else {
             resultTitle.innerText = "実践テスト結果";
         }
